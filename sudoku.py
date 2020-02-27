@@ -3,15 +3,15 @@ import copy
 class suduko:
     def __init__(self):
         self.sudoku =  [
-                            [0, 7, 0, 8, 9, 0, 0, 0, 0 ],
-                            [0, 5, 0, 0, 0, 0, 3, 0, 4 ],
-                            [0, 2, 0, 0, 4, 0, 0, 1, 0 ],
-                            [5, 6, 8, 9, 0, 0, 4, 7, 2 ],
-                            [0, 0, 0, 6, 0, 0, 0, 0, 0 ],
-                            [1, 0, 7, 0, 5, 0, 6, 3, 8 ],
-                            [7, 3, 0, 1, 0, 2, 0, 8, 0 ],
-                            [6, 0, 0, 4, 7, 0, 1, 0, 0 ],
-                            [2, 0, 9, 0, 3, 8, 7, 0, 6 ]
+                            [4, 7, 3, 0, 0, 0, 0, 0, 0 ],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0 ]
                         ]
 
     def get_original_sudoku(self):
@@ -164,33 +164,64 @@ def check_for_valid_digits(sudoku, copy_sudoku, row, col):
                 if not box_duplicates(boxes, box, i):
                     digits_array.append(i)
     return digits_array
+
+def each_digit_count_in_a_box(cs):
+    count = {
+            'box0': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
+            'box1': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
+            'box2': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
+            'box3': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
+            'box4': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
+            'box5': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
+            'box6': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
+            'box7': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
+            'box8': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
+        }
+
+    #time to apply the sets 
+    for i in range(0,9):
+        for j in range(0,9):
+            if isinstance(cs[i][j], (list)):
+                box_name = "box" + str( which_box(i,j) )
+                for k in cs[i][j]:
+                    if k in count[box_name]:
+                        count[box_name][k] = count[box_name][k] + 1
+    
+    return count
+
+def replace_list_to_zero(cs):
+    #replace the list to zero
+    for i in range(0,9):
+        for j in range(0,9):
+            if isinstance(cs[i][j], (list)):
+                cs[i][j] = 0
+    
+    return cs
+
+def sudoku_completed_check(cs):
+    for i in range(0,9):
+        for j in range(0,9):
+            if cs[i][j] == 0:
+                return False
+    return True   
                     
-
-
-if __name__ == "__main__":
-
-    # sudoku
-    sudoku = suduko()
-    os = sudoku.get_original_sudoku()
-    cs = sudoku.get_deep_copy_sudoku()
-
-    flag = True
-
+def replace_zeros_with_list(os, cs):
     #1> fid the no. of fixed digits in each box
+    flag = False
 
     fixed_digits = {}
     length_of_each_box = {}
     for i in range(0,9):
         for j in range(0,9):
+            #find which box
+            box = which_box(i, j)
+            box_name = 'box' + str(box)
+            if box_name not in fixed_digits:
+                fixed_digits[box_name] = []
             if cs[i][j] != 0:
-                #find which box
-                box = which_box(i, j)
-                box_name = 'box' + str(box)
-                if box_name not in fixed_digits:
-                    fixed_digits[box_name] = []
                 fixed_digits[box_name].append(cs[i][j])
     
-    # find the box with higest no of fixed digits
+    #2 find the box with higest no of fixed digits
     box_to_select = [ [], [], [], [], [], [], [], [], [], [] ]
     for key, value in fixed_digits.items():
         print(key, value)
@@ -200,6 +231,7 @@ if __name__ == "__main__":
     print(length_of_each_box)
     print(box_to_select)
 
+    #select the box and replace zeros with the list
     #selecting the first box
     for i in range(9,-1,-1):
         if box_to_select[i] != []:
@@ -214,34 +246,66 @@ if __name__ == "__main__":
                                 if cs[row][col].__len__() == 1:
                                     cs[row][col] = cs[row][col][0]
                                     os[row][col] = cs[row][col]
+                                    flag = True
+    
+    if flag == True:
+        cs = replace_list_to_zero(cs)
+        return replace_zeros_with_list(os, cs)
 
+    sudoku = {'original_sudoku': os, 'copy_sudoku': cs } 
+    return sudoku 
+
+if __name__ == "__main__":
+
+    # sudoku
+    sudoku = suduko()
+    os = sudoku.get_original_sudoku()
+    cs = sudoku.get_deep_copy_sudoku()
+
+    flag = True
+
+    #replacing zeros with the list
+    return_sudoku = replace_zeros_with_list(os, cs)
+    print(return_sudoku)
+
+    os = return_sudoku['original_sudoku']
+    cs = return_sudoku['copy_sudoku']
+    
     print(cs)
-    print(os)
+    print(os)    
     
-    count = {
-            'box1': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
-            'box2': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
-            'box3': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
-            'box4': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
-            'box5': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
-            'box6': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
-            'box7': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
-            'box8': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
-            'box9': { 1:0 ,2:0 ,3:0 , 4:0, 5:0, 6:0, 7:0, 8:0, 9:0 },
-        }
-    boxes = convert_sudoku_to_boxes(cs)
-    #time to apply the sets 
-    for i in range(0,9):
-        for j in range(0,9):
-            if isinstance(boxes[i][j], (list)):
-                
-                # import pdb; pdb.set_trace()
-                box_name = "box" + str(i+1)
-                for k in boxes[i][j]:
-                    if k in count[box_name]:
-                        count[box_name][k] = count[box_name][k] + 1
-    
+    #get the count of each digit in the list under each box
+    # the count can then be used to find the unique digit 
+    count = each_digit_count_in_a_box(cs)
     print(count)
     
-                        
+    #replace the list with single digit in the box with the digit
+    for box in count:
+        for digit, counter in count[box].items():
+            print(box, digit, counter)
+            if counter == 1:
+                print(box, "has a unique digit", digit)
+                for i in range(0,9):
+                    for j in range(0,9):
+                        if box.endswith(str(which_box(i,j))):
+                            if isinstance(cs[i][j], (list)):
+                                for k in cs[i][j]:
+                                    if k == digit:
+                                        cs[i][j] = digit
+    
+    print(cs)
+
+    #replace the list to zero
+    cs = replace_list_to_zero(cs)
+    
+    #sudoku completed check
+    sudoku_completed = sudoku_completed_check(cs)
+    os = cs
+    if sudoku_completed:
+        print('Hurrayyy!!!! sudoku is completed')
+        print(os)
+    else:
+        print("work in progressss")
+    print(cs)
+    print(os)
 
