@@ -92,24 +92,6 @@ def which_box(row, col):
     
     return box 
 
-def add_digit(original_sudoku, sudoku, row, col, data=None):
-    digits = []
-    for i in range(1,10):
-        # print(i, "digit")
-        if data != i:
-            digits.append(i)
-
-    if data == None or data == 0:
-        for i in range(1, 10):
-            if check_duplicates(suduko, row, col, i):
-                sudoku[row][col] = i
-                return sudoku[row][col]
-        print("count find a digit for", row, col)
-        sudoku[row][col] = 0
-    
-    return sudoku[row][col]
-
-
 def update_row_to_match(original_sudoku, sudoku, row):
     # check if the row contains 0
     copied_row = sudoku[row]
@@ -204,7 +186,24 @@ def sudoku_completed_check(cs):
             if cs[i][j] == 0:
                 return False
     return True   
-                    
+
+def replaced_single_list_in_box(cs, count):
+    for box in count:
+        for digit, counter in count[box].items():
+            print(box, digit, counter)
+            if counter == 1:
+                print(box, "has a unique digit", digit)
+                for i in range(0,9):
+                    for j in range(0,9):
+                        if box.endswith(str(which_box(i,j))):
+                            if isinstance(cs[i][j], (list)):
+                                for k in cs[i][j]:
+                                    if k == digit:
+                                        cs[i][j] = digit
+    
+    print(cs)
+    return cs
+
 def replace_zeros_with_list(os, cs):
     #1> fid the no. of fixed digits in each box
     flag = False
@@ -253,17 +252,10 @@ def replace_zeros_with_list(os, cs):
         return replace_zeros_with_list(os, cs)
 
     sudoku = {'original_sudoku': os, 'copy_sudoku': cs } 
-    return sudoku 
+    return sudoku
 
-if __name__ == "__main__":
-
-    # sudoku
-    sudoku = suduko()
-    os = sudoku.get_original_sudoku()
-    cs = sudoku.get_deep_copy_sudoku()
-
-    flag = True
-
+def find_sudoku_solution(cs, os):
+    print("work in progress!!!!")
     #replacing zeros with the list
     return_sudoku = replace_zeros_with_list(os, cs)
     print(return_sudoku)
@@ -279,33 +271,65 @@ if __name__ == "__main__":
     count = each_digit_count_in_a_box(cs)
     print(count)
     
-    #replace the list with single digit in the box with the digit
-    for box in count:
-        for digit, counter in count[box].items():
-            print(box, digit, counter)
-            if counter == 1:
-                print(box, "has a unique digit", digit)
-                for i in range(0,9):
-                    for j in range(0,9):
-                        if box.endswith(str(which_box(i,j))):
-                            if isinstance(cs[i][j], (list)):
-                                for k in cs[i][j]:
-                                    if k == digit:
-                                        cs[i][j] = digit
-    
-    print(cs)
+    #replace the list with single digit list in the box with the digit itself
+    cs = replaced_single_list_in_box(cs, count)
 
     #replace the list to zero
     cs = replace_list_to_zero(cs)
     
-    #sudoku completed check
-    sudoku_completed = sudoku_completed_check(cs)
     os = cs
-    if sudoku_completed:
+
+    if sudoku_completed_check(cs):
         print('Hurrayyy!!!! sudoku is completed')
         print(os)
+        return os
     else:
-        print("work in progressss")
-    print(cs)
-    print(os)
+        # import pdb; pdb.set_trace()
+        cs = add_single_digit(os, cs)
+        cs = replace_list_to_zero(cs)
+        os = cs
+        return find_sudoku_solution(cs, os)
+
+def add_single_digit(os, cs):
+    #check even and odd numbers
+    return_sudoku = replace_zeros_with_list(os, cs)
+    print(return_sudoku)
+    os = return_sudoku['original_sudoku']
+    cs = return_sudoku['copy_sudoku']
+
+    for i in range(0,9):
+        for j in range(0,9):
+            # import pdb; pdb.set_trace()
+            if isinstance(cs[i][j], (list)):
+                if i == 0:
+                    print("even")
+                    for k in range(1,10):
+                        if k in cs[i][j]:
+                            cs[i][j] = k
+                            # import pdb; pdb.set_trace()
+                            return cs
+                elif (i % 2) == 0:
+                    print("even")
+                    for k in range(1,10):
+                        if k in cs[i][j]:
+                            cs[i][j] = k
+                            # import pdb; pdb.set_trace()
+                            return cs
+                else:
+                    print("odd")
+                    for k in range(9,0,-1):
+                        if k in cs[i][j]:
+                            cs[i][j] = k
+                            # import pdb; pdb.set_trace()
+                            return cs
+
+if __name__ == "__main__":
+
+    # sudoku
+    sudoku = suduko()
+    os = sudoku.get_original_sudoku()
+    cs = sudoku.get_deep_copy_sudoku()
+
+    os = find_sudoku_solution(cs, os)
+
 
